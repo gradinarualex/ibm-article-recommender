@@ -1,0 +1,4 @@
+joblib==1.0.1
+pandas==1.2.3
+numpy==1.19.2
+matplotlib==3.3.4
