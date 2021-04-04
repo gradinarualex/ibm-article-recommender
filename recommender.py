@@ -31,20 +31,28 @@ def load_data():
     return user_item_df, item_df, user_item_matrix
 
 
-def get_article_names(article_ids, df):
+def get_article_names(article_ids, df=df):
     ''' Gets article name based on article id using df (interactions) dataframe
     
         Args:
             article_ids - (list) article ids
-            df - (pandas dataframe) user-item interactions clean df
+            df - (pandas dataframe) df as defined at the top of the notebook
             
         Returns:
             article_names - (list) article names associated with the list
                 of article ids (this is identified by the 'title' column)
     '''
     
-    article_title_series = df[df['article_id'].isin(article_ids)]['title']
-    article_names = article_title_series.unique()
+    # get dataframe of article_id and title of articles inputed
+    article_series = df[df['article_id'].isin(article_ids)][['article_id', 'title']]
+    # remove duplicates
+    article_series = article_series.drop_duplicates()
+    # set article_id as index to get article_names in the inputed order
+    article_series = article_series.set_index('article_id')
+    # get list of article_names in correct order
+    article_ordered = article_series.loc[article_ids]
+    # get article names in correct order (as inputed)
+    article_names = article_ordered['title'].tolist()
     
     # return the article names associated with list of article ids
     return article_names
@@ -150,7 +158,7 @@ def get_top_sorted_users(user_id, df, user_item):
     '''
     
     # compute similarity of each user to the provided user
-    user_similarity = user_item.dot(user_item.loc[1, :])
+    user_similarity = user_item.dot(user_item.loc[user_id, :])
     
     # convert result into dataframe
     user_similarity = user_similarity.reset_index()
@@ -182,14 +190,12 @@ def get_top_sorted_users(user_id, df, user_item):
 
 
 def user_user_recs(user_id, df, m=10):
-    ''' User based collaborative filtering. Loops through the users based
-        on closeness to the input user_id. For each user - finds articles
-        the user hasn't seen before and provides them as recs. Does this
-        until m recommendations are found.
+    ''' Loops through the users based on closeness to the input user_id
+        For each user - finds articles the user hasn't seen before and
+        provides them as recs. Does this until m recommendations are found.
 
         Args:
             user_id - (int) a user id
-            df - (pandas dataframe) user-item interactions clean df
             m - (int) the number of recommendations you want for the user
     
         Returns:
@@ -237,8 +243,10 @@ def user_user_recs(user_id, df, m=10):
         user_reco_names = get_article_names(user_recos)
         
         # add user_recos and reco_names to list
-        recs.extend(user_recos)
-        rec_names.extend(user_reco_names)
+        for art_id, art_name in zip(user_recos, user_reco_names):
+            if not art_id in recs:
+                recs.append(art_id)
+                rec_names.append(art_name)
         
         # if number of recommendations exceeds limit, stop
         if len(recs) >= m:

@@ -45,15 +45,15 @@ def sol_2_test(top_articles):
     
 def sol_5_test(sol_5_dict):
     sol_5_dict_1 = {
-        'The user that is most similar to user 1.': [1330], 
-        'The user that is the 10th most similar to user 131': [1338]
+    'The user that is most similar to user 1.': 3933, 
+    'The user that is the 10th most similar to user 131': 242
     }
     if sol_5_dict == sol_5_dict_1:
         print("This all looks good!  Nice job!")
         
     else:
         for k, v in sol_5_dict_1.items():
-            if set(sol_5_dict[k]) != set(sol_5_dict_1[k]):
+            if sol_5_dict[k] != sol_5_dict_1[k]:
                 print("Oops!  Looks like there is a mistake with the {} key in your dictionary.  The answer should be {}.  Try again.".format(k,v))
     
     
